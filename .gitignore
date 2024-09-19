@@ -1,3 +1,10 @@
+# data files
+.tsv
+.csv
+.txt
+.log
+# Mac thing
+.DS_Store
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
