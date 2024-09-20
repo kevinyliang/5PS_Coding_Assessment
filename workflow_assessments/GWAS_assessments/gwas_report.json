@@ -1,5 +1,5 @@
 {
-  "make_regional_plot.ld_ref_file": "/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/lead_chr7_proxy.tsv",
+  "make_regional_plot.ld_ref_file": "/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/rs3779381_proxy_euro_500kb.txt",
   "make_regional_plot.report_quarto": "/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/src/quarto_md/GWAS_report.qmd",
   "make_regional_plot.rsid": "rs3779381",
   "make_regional_plot.cleaned_sumstat_file": "/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/cleaned_sumstats.txt.gz"

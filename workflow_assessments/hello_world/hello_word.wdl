@@ -1,6 +1,6 @@
 version 1.0
 
-workflow hello_word_q1{
+workflow hello_world_q1{
   call hello_world
 }
 

@@ -5,13 +5,13 @@ workflow hello_w_input_q2 {
   input {
     String user_string
   }
-  call hello_with_inputs_q2{
+  call hello_with_input {
     input:
       usr_input = user_string
   }
 }
 
-task hello_with_inputs_q2 {
+task hello_with_input {
   input {
     String usr_input
   }
