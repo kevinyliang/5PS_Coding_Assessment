@@ -8,7 +8,6 @@ editor:
 engine: knitr
 ---
 
-### Linux assessment
 This is the markdown for the linux assessment.
 
 Notes:
@@ -50,7 +49,7 @@ In this simple bash script:
 1. Obtained the first line which by looking at the file content (gunzip -c <> | head ), I know it is the header.
 2. I pass this line through a few conditionals to check which separator it matches to
 
-Limitations: This is assumes a few things
+Limitations: This assumes a few things
 
 * It assumes that if any of these characters are used, they are used as separators only
 * It assumes that all columns have the same type of separators (which is usually the case unless the file not formatted well)
