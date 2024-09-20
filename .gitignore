@@ -1,3 +1,5 @@
+# quarto
+/.quarto/
 # data files
 .tsv
 .csv

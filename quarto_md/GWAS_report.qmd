@@ -3,6 +3,8 @@ title: GWAS assessments
 format:
   html:
     code-fold: true
+editor:
+  render-on-save: false
 jupyter: python3
 ---
 
@@ -20,8 +22,6 @@ Create a Quarto report containing the
 
 * Finally include a table of the top 5 SNPs (**ranked by p-value**) and **include all columns**.
 
-I believe an markdown woudl also be acceptable and because I do not have Quarto installed, I decided to use jupyternotebook.
-
 ```{python}
 # read in data
 import os,shutil,re,glob,csv
@@ -34,3 +34,122 @@ import seaborn as sns
 # import custom package
 from python_GWAS_helpers import *
 ```
+
+#### Data preparation code
+The following set of code simply reads in the data and prepare plot data
+
+```{python}
+#| tags: [parameters]
+#| echo: true
+sumstat_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/cleaned_sumstats.txt.gz"
+ld_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/lead_chr7_proxy.tsv"
+lead_snp="rs3779381"
+```
+
+```{python}
+sumstat_res = pd.read_csv(sumstat_file,sep="\t",quoting=csv.QUOTE_NONE)
+most_significant = sumstat_res.query(f"rs_number == '{lead_snp}'")
+
+# obtain the plot data
+most_sig_snp = most_significant.rs_number.to_list()[0]
+most_sig_chr = most_significant.chromosome.to_list()[0]
+most_sig_pos = most_significant.position.to_list()[0]
+min_pos = most_sig_pos - 500_000
+max_pos = most_sig_pos + 500_000
+assert(most_sig_chr == 7),f"what?? it should be chr 7 cuz we queried chr 7"
+plot_region = sumstat_res.query(
+  f"chromosome == {most_sig_chr} & position >= {min_pos} & position <= {max_pos}"
+)
+
+# get the plot data
+ld_data = pd.read_csv(ld_file,sep="\t",quoting=csv.QUOTE_NONE)[['RS_Number',"R2"]]
+plot_data = pd.merge(
+  plot_region[['position','rs_number','p-value','_-log10_p-value']],
+  ld_data,
+  how='left',left_on=['rs_number'],right_on=['RS_Number']
+).copy()
+# modify stuff so the plot looks nice
+
+## the units in mb
+x_axis_units = 1_000_000
+plot_data = plot_data.assign(
+  pos_mb = lambda df: df['position']/x_axis_units
+)
+## rename so easier to reference.
+plot_data = plot_data.rename(
+  {
+    "_-log10_p-value":"neglog10_pvalue"
+  },axis=1
+)
+## fill in R2 without value to be 0 (so will be the same color)
+plot_data['R2'] = plot_data['R2'].apply(
+  lambda val: 0 if np.isnan(val) else val
+)
+def get_bins(val):
+  if val < 0.2:
+    bin_cat = "<0.2"
+  elif 0.2 <= val < 0.4:
+    bin_cat = "[0.2,0.4)"
+  elif 0.4 <= val < 0.6:
+    bin_cat = "[0.4,0.6)"
+  elif 0.6 <= val < 0.8:
+    bin_cat = "[0.6,0.8)"
+  elif 0.8 <= val:
+    bin_cat = "[0.8,1]"
+  else:
+    assert(False),f"what value are we doing...{val}"
+  return bin_cat
+plot_data['r2_bins'] = plot_data[['R2','rs_number']].apply(
+  lambda df: "Query SNP" if df['rs_number'] == most_sig_snp else get_bins(df['R2']),
+  axis=1
+)
+
+
+```
+
+#### regional assocation plot
+This is the regional association plot for the user input RSID `{python} lead_snp`
+
+```{python}
+#| label: locuszoom
+#| fig-cap: Locus zoom plot for the lead snp
+
+# create region plot
+c_palette = {
+  "Query SNP":"#c71d71",
+  "<0.2":"#120e46",
+  "[0.2,0.4)":"#6ea2ce",
+  "[0.4,0.6)":"#15a67d",
+  "[0.6,0.8)":"#fdb24f",
+  "[0.8,1)":"#ef471f"
+}
+
+fig,ax = plt.subplots()
+sns.scatterplot(
+  plot_data,
+  x = "pos_mb", y="neglog10_pvalue",hue="r2_bins",ax=ax,
+  hue_order = list(c_palette.keys()),palette=c_palette
+)
+# annotate the lead snp
+ax.annotate(
+  "Query SNP/Lead SNP", 
+  xy=(0.5,0.95),
+  xytext=(0.6,0.95),
+  xycoords='axes fraction',
+  arrowprops=dict(arrowstyle="->",facecolor='black')
+)
+ax.update(
+  {
+    "xlabel":"Position [MB]",
+    "ylabel":r"$-log_{10}(p-value)$"
+  }
+)
+plt.show()
+```
+
+#### obtain the total number of SNPs
+```{python}
+n_snps = len(plot_data.rs_number.unique())
+```
+
+The total number of SNPs plotted in this region `{python} n_snps`
