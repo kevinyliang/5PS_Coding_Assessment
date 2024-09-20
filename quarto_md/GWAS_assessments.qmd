@@ -1,5 +1,5 @@
 ---
-title: GWAS assessments
+title: GWAS assessment
 format:
   html:
     code-fold: true
@@ -22,9 +22,9 @@ b. Given that the input GWAS has ~10 million SNPS, why is the specific value of
 **Solutions**
 
 a: 
-  This is to account for multiple testing. A p-value of 0.05 means the probability of observing a test-statistic as extreme or more for a single tests under the null is 5%. However, when running many tests, this would correspond to many false positives observed.
+  This is to account for multiple testing. A p-value of 0.05 means the probability of observing a test-statistic as extreme or more for a single test under the null is 5%. However, when running many tests, this would correspond to many false positives.
 
-  To use a bonferroni correction of 5e-8 would ensure the family-wise error rate of roughly 0.05
+  To use a bonferroni correction of 5e-8 would ensure the family-wise error rate of roughly 0.05.
 
 b:
   A 5e-8 bonferroni threshold assumes 1 million independent variants. This is because many variants are in LD and correcting for all variants will be overly conservative.
@@ -34,8 +34,7 @@ b:
 
 #### Question 2:
 
-Plot the minor allele frequency (MAF) versus the absolute value of the “beta” for all genome-wide significant variants (p-value < 5e-8) from the cleaned GWAS file. You should observe that the minor allele frequency is generally inversely proportional to
-the absolute beta (|𝑏𝑒𝑡𝑎| ≈ 1 ). 𝑀𝐴𝐹
+Plot the minor allele frequency (MAF) versus the absolute value of the “beta” for all genome-wide significant variants (p-value < 5e-8) from the cleaned GWAS file. You should observe that the minor allele frequency is generally inversely proportional to the absolute beta (|𝑏𝑒𝑡𝑎| ≈ 1 ). 𝑀𝐴𝐹
 
 a. What aspect of evolution is responsible for observing so few variants of large beta (effect) at high minor allele frequency, i.e. so few points in the top-right of the plot.
 
@@ -76,4 +75,4 @@ a:
   
 
 b:
-  Insufficient sample sizes is the reason why so few variants of small effect sizes that are relatively rare are detected.
+  Insufficient sample sizes is the reason why so few variants of small effect sizes that are relatively rare are detected in GWAS.

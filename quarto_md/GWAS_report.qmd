@@ -19,7 +19,6 @@ This is the Quarto report for question 8
   * p-value
   * beta
   * standard error
-
 * Finally include a table of the top 5 SNPs (**ranked by p-value**) and **include all columns**.
 
 ```{python}

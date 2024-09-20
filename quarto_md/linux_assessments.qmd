@@ -1,5 +1,5 @@
 ---
-title: Linux assessments
+title: Linux assessment
 format:
   html:
     code-fold: true
@@ -8,11 +8,11 @@ editor:
 engine: knitr
 ---
 
-### 5 Prime Sciences: Linux assessment
+### Linux assessment
 This is the markdown for the linux assessment.
 
 Notes:
-  
+
   The rmarkdown package is needed to render this markdown and execute the bash codes.
 
 **Assessment descriptions:**
@@ -195,8 +195,7 @@ Bonus: Do step 4 in a single command-line statement.
 Previous solution was a single line awk command.
 
 ##### Question 6
-Using the chromosome and position columns from the output from step 4, subset
-the original GWAS summary statistics file by **matching on chromosome and position**, ie re-extract the lines within the subregion by matching chromosome and position of the variants in the subregion.
+Using the chromosome and position columns from the output from step 4, subset the original GWAS summary statistics file by **matching on chromosome and position**, ie re-extract the lines within the subregion by matching chromosome and position of the variants in the subregion.
 
 **Solution**
 

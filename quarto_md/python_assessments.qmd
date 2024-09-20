@@ -52,7 +52,7 @@ cleaned data. This new dataset will be used in another step below.
 
 This was implemented in the python package: python_GWAS_helpers
 
-Source code for the package is is available on github (https://github.com/kevinyliang/5PS_Coding_Assessment). 
+Source code for the package is attached with submission.
 
 Code copied here for ease of reference
 
@@ -279,12 +279,12 @@ SNPs with A/T or G/C alleles are known as palindromic SNPs, because their allele
 
 The function is implemented in the package: python_GWAS_helpers
 
-Source code available on github: https://github.com/kevinyliang/5PS_Coding_Assessment
+Source code is attached with submission.
 
 Code copied here for ease of reference
 
 **notes**
-There were variants with allele frequneices as -9. These variants were not filtered out and assuemd to be ok.
+There were variants with allele frequneices as -9. These variants were not filtered out and assumed to be ok.
 
 ```{python}
 #! echo: fenced
@@ -371,9 +371,9 @@ Number of palindromic ambiguous SNPs with threshold of 0.1 (i.e., palindromic an
 
 #### Question 7:
 
-The package source code is on github:
+The package source code is attached with submission:
 
-https://github.com/kevinyliang/5PS_Coding_Assessment/tree/main/simple_python_GWAS_package
+* 5PS_Coding_Assessment/tree/main/simple_python_GWAS_package
 
 To install via pip do:
 
@@ -392,7 +392,7 @@ Please see the Quarto markdown (GWAS_report.qmd)
 
 Please refer to:
 
-https://github.com/kevinyliang/5PS_Coding_Assessment/blob/main/simple_python_GWAS_package/tests/test_sumstat_cleanup.py
+* 5PS_Coding_Assessment/blob/main/simple_python_GWAS_package/tests/test_sumstat_cleanup.py
 
 The following situations are tested:
 
