@@ -109,9 +109,9 @@ n_sig_var = np.sum(sumstat_res['p-value'] <= 5e-8)
 
 ```
 
-1. Number of invalid SNPs: ```{python} n_invalid```
+1. Number of invalid SNPs: `{python} n_invalid`
 
-2. Number of genome-wide significant SNPs in the cleaned file: ```{python} n_sig_var```
+2. Number of genome-wide significant SNPs in the cleaned file: `{python} n_sig_var`
 
 
 #### Question 3
@@ -138,9 +138,9 @@ most_sig_rsid = most_significant['rs_number'].to_list()[0]
 
 **Solution**
 
-The most significant SNP is: ```{python} most_sig_rsid```
+The most significant SNP is: `{python} most_sig_rsid`
 
-The most significant p-value is ```{python} most_sig_p```
+The most significant p-value is `{python} most_sig_p`
 
 ```{python}
 #| label: top_5_snps
@@ -157,7 +157,8 @@ LDProxy to obtain LD statistics (r2) for that SNP to all other SNPs in the surro
 **Solution**
 
 LD proxy query URL:
-  - https://ldlink.nih.gov/?var=rs3779381&pop=CEU%2BTSI%2BFIN%2BGBR%2BIBS&genome_build=grch37&r2_d=r2&window=500000&collapseTranscript=true&annotate=forge&tab=ldproxy
+
+https://ldlink.nih.gov/?var=rs3779381&pop=CEU%2BTSI%2BFIN%2BGBR%2BIBS&genome_build=grch37&r2_d=r2&window=500000&collapseTranscript=true&annotate=forge&tab=ldproxy
 
 query parameters:
 
@@ -365,7 +366,7 @@ invalid_eaf = sumstat_res.query("eaf < 0 | eaf > 1").shape[0]
 ```
 
 
-Number of palindromic ambiguous SNPs with threshold of 0.1 (i.e., palindromic and within 0.5 +- 0.1): ```{python} palin_dropped_snps```
+Number of palindromic ambiguous SNPs with threshold of 0.1 (i.e., palindromic and within 0.5 +- 0.1): `{python} palin_dropped_snps`
 
 
 #### Question 7:
