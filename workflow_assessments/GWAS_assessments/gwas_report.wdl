@@ -7,7 +7,6 @@ workflow make_regional_plot {
     String rsid
     File ld_ref_file
     File report_quarto
-    File output_dir
   }
 
   call make_gwas_report{
@@ -15,8 +14,7 @@ workflow make_regional_plot {
       cleaned_sumstat_file = cleaned_sumstat_file,
       rsid = rsid,
       ld_ref_file = ld_ref_file,
-      report_quarto = report_quarto,
-      output_dir = output_dir
+      report_quarto = report_quarto
   }
 }
 
@@ -27,12 +25,8 @@ task make_gwas_report{
     String rsid
     File ld_ref_file
     File report_quarto
-    File output_dir
   }
   command<<<
-  echo quarto render ~{report_quarto} -P sumstat_file:~{cleaned_sumstat_file} -P ld_file:~{ld_ref_file} -P lead_snp:~{rsid} --output-dir ~{output_dir}
+  quarto render ~{report_quarto} -P sumstat_file:~{cleaned_sumstat_file} -P ld_file:~{ld_ref_file} -P lead_snp:~{rsid}
   >>>
-  output {
-    File res = 'GWAS_report.html'
-  }
 }
