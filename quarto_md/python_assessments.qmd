@@ -8,7 +8,6 @@ editor:
 jupyter: python3
 ---
 
-### Python assessment
 
 This section should be completed using Python, and the “Pandas” package (https://pandas.pydata.org/). 
 
@@ -377,12 +376,9 @@ The package source code is attached with submission:
 
 To install via pip do:
 
-1. clone the github repository or download the code
-2. run
+1. unzip
+2. then run *pip install <absolute path to>/simple_python_GWAS_package*
 
-```{bash}
-pip install <absolute path to>/simple_python_GWAS_package
-```
 
 ##### Question 8:
 
