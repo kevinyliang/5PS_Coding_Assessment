@@ -1,0 +1,68 @@
+---
+title: GWAS assessments
+format:
+  html:
+    code-fold: true
+editor:
+  render-on-save: true
+jupyter: python3
+---
+
+### Python assessments
+
+This section should be completed using Python, and the “Pandas” package (https://pandas.pydata.org/). 
+
+Note that ultimately all created code should be formatted into a **Python package** and the creation and proper documentation of functions is recommended. 
+
+Using the same GWAS summary statistics file as above, do the following:
+
+
+#### Question 1/2
+
+Read the GWAS summary statistics into a Pandas DataFrame.
+
+Perform data cleaning by removing rows without a valid rsid number and save the
+cleaned data. This new dataset will be used in another step below.
+
+**Solution**
+
+This was implemented in the python package: python_GWAS_helpers.
+
+Code copied here for ease of reference
+
+```{python}
+#! echo: true
+def clean_sumstats(gwas_file,rsid_col,output_file):
+  """Performs basic cleaning for summary statistics. Specifically it
+ will
+  1. remove rows without valid rsid numbers (matching to "^rs")
+  2. will print out basic counts
+
+  Requirements:
+    - the gwas file must be in gzipped format
+
+  Args:
+      gwas_file (str): the absolute path to the summary statistic file in gzipped format
+      rsid_col (int): 0-based indexing of the column for rsid
+      output_file (str): absolute path to where cleaned summary statistics are stored
+  """
+
+  sumstats = pd.read_csv(
+    gwas_file,quoting=csv.QUOTE_NONE,sep="\t"
+  )
+  valid_rows = sumstats.iloc[:,rsid_col].apply(lambda val: bool(re.match("^rs",val)))
+  valid_sumstats = sumstats[valid_rows]
+  valid_sumstats.to_csv(
+    output_file,
+    sep="\t",quoting=csv.QUOTE_NONE,compression="gzip",index=False
+  )
+
+  n_invalid_rsids = np.sum([not x for x in valid_rows])
+  valid_rows = np.sum(valid_rows)
+  assert(valid_rows == valid_sumstats.shape[0])
+
+  print(f"# SNPs with invalid RS ids: {n_invalid_rsids}")
+  print(f"# remaining rows: {valid_sumstats.shape[0]}")
+
+  return
+```

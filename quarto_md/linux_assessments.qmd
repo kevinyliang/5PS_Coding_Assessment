@@ -1,0 +1,205 @@
+---
+title: GWAS assessments
+format:
+  html:
+    code-fold: true
+editor:
+  render-on-save: true
+engine: knitr
+---
+
+### 5 Prime Sciences: Linux assessments
+This is the markdown for the linux assessments.
+
+Notes:
+  To run this markdown, need rmarkdown package installed to execute the bash code blocks.
+
+This section should be completed using the **Linux standard command line utilities or common bioinformatics binary programs**. 
+
+**Do not use R, Python or other high-level programming languages.** 
+
+Describe how you answer each question by pasting code and explaining your answer. 
+
+Optionally, *format answers within a single Markdown document*. Using the linked GWAS summary statistics data file (see Input Data) to report on the following:
+
+#### Input data:
+##### GWAS summary statistics
+* GWAS sumstats: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST005001-GCST006000/GCST005544/fn2stu.MAF0_.005.pos_.out_.gz
+* GWAS sumstats md5sum: 6d970202ef26b4cdef452eb25d436f38
+* Number of lines: 10586900
+
+##### GWAS README
+* GWAS readme: http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST005001-GCST006000/GCST005544/Zheng%20HF_26367794_readme.pdf
+* GWAS readme md5sum: 3d52cf0ec6da687be06cdbbd7af07662
+
+#### Question 1
+Determine the character used for the column separator.
+
+
+
+**Solution 1:**
+
+In this simple bash script, I obtained the first line of the file (assuming it is the header). I then just used regular expression to see if I see a space or tabs in the line.
+
+Limitations: This is assumes a few things
+
+* It assumes that for tab deliminated files, spaces are not used in the name
+* It assumes that all columns have the same type of separators (which is usually the case unless the file was malformed)
+* It only tests 2 types of separators, but it can of course be extended to have more ifelse statements.
+
+```{bash}
+#| echo: true
+# input file paths:
+gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+# assuming all lines have the same column separator and are not mixed, we can use regex to match
+
+## obtain the first line
+header_line=$(gunzip -c $gwas_gziped_file | head -n 1)
+tab_string="\t"
+space_string=" "
+if [[ $header_line =~ $space_string ]]; then 
+  echo 'The separator is space'
+elif [[ $header_line =~ $tab_string ]]; then 
+  echo 'The separator is tabs'
+else
+  echo "Not sure"
+fi
+```
+
+**Solution 2:**
+
+Alternatively, it is often easier to obtain the first few rows of the file, write it to file and inspect it.
+
+Limitation:
+* It does assume that the entire file have the same separator, which is usually the case
+
+To check, it is always possible to make sure all rows have the same number of columns
+```{bash}
+#| echo: true
+gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+gunzip -c $gwas_gziped_file | head > /Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/header_of_gwas.txt
+```
+
+#### Question 2
+Obtain the line count
+
+**Solution**:
+
+unzip the file, then count the number of lines
+
+```{bash}
+#| echo: true
+gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+
+n_lines=$(gunzip -c $gwas_gziped_file | wc -l)
+echo $n_lines
+```
+
+#### Question 3
+
+Obtain the number of columns
+
+**Solution**
+
+1. Obtain the header row
+2. Use sed to replace tabs with new lines
+3. count the number of lines
+
+```{bash}
+#| echo: true
+gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+
+# obtain the header
+n_column=$(sed "s/\t/\\n/g" <(gunzip -c $gwas_gziped_file | head -n 1) | wc -l )
+# we know the separator is tabs, so split by tabs and count the number of lines
+echo $n_column
+```
+
+#### Question 4
+
+
+Extract summary statistics within **chromosome 7** from **position 120500718 to 121500718**, and **keep only lines where the value of the column rs_number matches ‘^rs’** Subset this output for the following columns: **chromosome, position and rs_number**. Save the resulting lines with 3 columns to another file.
+
+
+
+
+**Solution**
+
+Use AWK to parse the file line by line and pipe it to a pre-specified output
+Steps:
+
+Requirements
+
+* within chromosome 7
+* positions between 121500718 and 120500718
+* Have rsid (i.e., the rs_number columns starts with rs)
+* output the chromosome, position, rs_number
+* save to file
+
+Steps:
+
+0. unzip the gwas file and pipe it into awk
+1. (NR == FNR): technically not needed, though used if parsing more than 1 files, 'for each line of the the first file'
+2. If (the critieria listed are satisfied)
+3. print out the 3 columns
+4. redirect the output to a file
+
+```{bash}
+#| echo: true
+
+gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+
+output_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/q4_outputs.txt"
+# the indices for the relevant columns we care about
+## 1-based
+chrom_idx=1
+rsid_idx=3
+pos_idx=2
+pos_max=121500718
+pos_min=120500718
+targ_chrom=7
+
+
+awk '(NR==FNR){if ($'$chrom_idx' == '$targ_chrom' && $'$rsid_idx' ~ "^rs" && $'$pos_idx' <= '$pos_max' && $'$pos_idx' >= '$pos_min'){print $'$chrom_idx',$'$pos_idx',$'$rsid_idx'}}' <(gunzip -c ${gwas_gziped_file}) > $output_file
+
+```
+
+#### Question 5
+
+Bonus: Do step 4 in a single command-line statement.
+
+**Solution**
+Previous solution was a single line awk command.
+
+##### Question 6
+Using the chromosome and position columns from the output from step 4, subset
+the original GWAS summary statistics file by matching on chromosome and position, ie re-extract the lines within the subregion by matching chromosome and position of the variants in the subregion.
+
+**Solution**
+
+Similar to Question 4, will use awk to parse everything, but store the requirement also
+
+Steps:
+
+0. pass in the file from Q4 and the unzipped gwas summary statistics to awk
+1. Use awk to store all the chromosome, position and rsids we want in chrom, pos, and rsid respectively
+  - NR==FNR will mean these are lines within the first file
+  - next will move on to the next entry
+2. when NR != FNR (this is happening when reaching lines in the second file), will print out the rows if the chromosome and position is what we want.
+
+Notes:
+
+* This matches positions and chromosome exactly, as stated in the question, though can be modified like above to match in range. In which case, the first awk statement should keep track of min and max positions rather than all positions.
+
+```{bash}
+#| echo: true
+gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+q4_out_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/q4_outputs.txt"
+q6_out_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/q6_outputs.txt"
+
+chrom_idx=1
+rsid_idx=3
+pos_idx=2
+
+awk '(NR==FNR){chrom[$1];pos[$2];rsid[$3];next}(NR != FNR){if ($'$chrom_idx' in chrom && $'$pos_idx' in pos){print $0}}' $q4_out_file <(gunzip -c $gwas_gziped_file) > $q6_out_file
+```

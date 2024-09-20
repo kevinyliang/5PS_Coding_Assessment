@@ -153,3 +153,30 @@ n_snps = len(plot_data.rs_number.unique())
 ```
 
 The total number of SNPs plotted in this region `{python} n_snps`
+
+##### Lead SNP (or selected SNP info)
+
+```{python}
+lead_p_value = "{:.3e}".format(most_significant['p-value'].to_list()[0])
+lead_beta = np.round(most_significant['beta'].to_list()[0],3)
+lead_se = "{:.3e}".format(most_significant['se'].to_list()[0])
+```
+
+The selected SNP is `{python} lead_snp`
+
+The p-value for the SNP is `{python} lead_p_value`
+
+The beta for the SNP is `{python} lead_beta`
+
+The standard error for the SNP is `{python} lead_se`
+
+#### Top 5 SNPs
+
+```{python}
+#| label: top_5_snps
+#| tbl-cap: 'Top 5 SNPs summary statistics'
+#| tbl-column: body
+
+needed_snps = plot_data.sort_values(by=["p-value"],ascending=True).head(n=5).rs_number
+sumstat_res.query("rs_number.isin(@needed_snps)")
+```
