@@ -1,5 +1,5 @@
 ---
-title: GWAS assessments
+title: Python assessment
 format:
   html:
     code-fold: true
@@ -8,7 +8,7 @@ editor:
 jupyter: python3
 ---
 
-### Python assessments
+### Python assessment
 
 This section should be completed using Python, and the “Pandas” package (https://pandas.pydata.org/). 
 
@@ -33,10 +33,12 @@ sumstat_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5Prim
 
 original_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
 
+ld_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/rs3779381_proxy_euro_500kb.txt"
+
 
 ```
 
-#### Question 1/2
+#### Question 1 and 2
 
 Read the GWAS summary statistics into a Pandas DataFrame.
 
@@ -48,7 +50,9 @@ cleaned data. This new dataset will be used in another step below.
 
 **Solution**
 
-This was implemented in the python package: python_GWAS_helpers.
+This was implemented in the python package: python_GWAS_helpers
+
+Source code for the package is is available on github (https://github.com/kevinyliang/5PS_Coding_Assessment). 
 
 Code copied here for ease of reference
 
@@ -57,11 +61,9 @@ Code copied here for ease of reference
 def clean_sumstats(gwas_file,rsid_col,output_file):
   """Performs basic cleaning for summary statistics. Specifically it
  will
-  1. remove rows without valid rsid numbers (matching to "^rs")
+  1. remove rows without valid rsid numbers (i.e., matching to "^rs")
   2. will print out basic counts
 
-  Requirements:
-    - the gwas file must be in gzipped format
 
   Args:
       gwas_file (str): the absolute path to the summary statistic file in gzipped format
@@ -89,7 +91,10 @@ def clean_sumstats(gwas_file,rsid_col,output_file):
   return
 ```
 
+
 ```{python}
+
+python_GWAS_helpers.clean_sumstats(gwas_file = original_file,rsid_col = 2,output_file = sumstat_file)
 
 sumstat_res = pd.read_csv(sumstat_file,sep="\t",quoting=csv.QUOTE_NONE)
 
@@ -105,11 +110,10 @@ n_sig_var = np.sum(sumstat_res['p-value'] <= 5e-8)
 
 ```
 
-**Solution**
-
 1. Number of invalid SNPs: ```{python} n_invalid```
 
-2. Number of genome-wide significant SNPs: ```{python} n_sig_var```
+2. Number of genome-wide significant SNPs in the cleaned file: ```{python} n_sig_var```
+
 
 #### Question 3
 
@@ -127,14 +131,18 @@ relevant_region = sumstat_res.query(
   f"chromosome == {targ_chrom} & position <= {max_pos} & position >= {min_pos}"
 )
 most_significant = relevant_region[relevant_region['p-value'] == relevant_region['p-value'].min()]
-assert(len(most_significant) == 1),f"more than 1 sig snps...probably pick one first"
+assert(len(most_significant) == 1),f"more than 1 most significant snps...probably pick one first"
 
 most_sig_p = most_significant['p-value'].to_list()[0]
+most_sig_rsid = most_significant['rs_number'].to_list()[0]
 ```
 
 **Solution**
 
+The most significant SNP is: ```{python} most_sig_rsid```
+
 The most significant p-value is ```{python} most_sig_p```
+
 ```{python}
 #| label: top_5_snps
 #| tbl-cap: 'Top 5 SNPs summary statistics'
@@ -160,7 +168,7 @@ query parameters:
 * query SNP: rs3779381
 
 Results:
-* R2 computed for 998 variants.
+* R2 was computed for 998 variants.
 
 #### Question 5
 
@@ -183,7 +191,7 @@ plot_region = sumstat_res.query(
 )
 
 # get the plot data
-ld_data = pd.read_csv("/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/lead_chr7_proxy.tsv",sep="\t",quoting=csv.QUOTE_NONE)[['RS_Number',"R2"]]
+ld_data = pd.read_csv(ld_file,sep="\t",quoting=csv.QUOTE_NONE)[['RS_Number',"R2"]]
 plot_data = pd.merge(
   plot_region[['position','rs_number','p-value','_-log10_p-value']],
   ld_data,
@@ -227,16 +235,16 @@ plot_data['r2_bins'] = plot_data[['R2','rs_number']].apply(
 # create custom palette
 c_palette = {
   "Query SNP":"#c71d71",
-  "<0.2":"#120e46",
-  "[0.2,0.4)":"#6ea2ce",
-  "[0.4,0.6)":"#15a67d",
+  "[0.8,1)":"#ef471f",
   "[0.6,0.8)":"#fdb24f",
-  "[0.8,1)":"#ef471f"
+  "[0.4,0.6)":"#15a67d",
+  "[0.2,0.4)":"#6ea2ce",
+  "<0.2":"#120e46"
 }
 ```
 ```{python}
 #| label: locuszoom
-#| fig-cap: Locuszoom around lead SNPs
+#| fig-cap: Regional association around lead SNPs
 fig,ax = plt.subplots()
 sns.scatterplot(
   plot_data,
@@ -253,10 +261,11 @@ ax.annotate(
 )
 ax.update(
   {
-    "xlabel":"Position [MB]",
+    "xlabel":"position on chr7 (Mb)",
     "ylabel":r"$-log_{10}(p-value)$"
   }
 )
+ax.legend(title=r"$r^2$")
 plt.show()
 ```
 
@@ -268,7 +277,9 @@ SNPs with A/T or G/C alleles are known as palindromic SNPs, because their allele
 
 **Solution**
 
-The function is implemented in the package: python_GWAS_helpers.
+The function is implemented in the package: python_GWAS_helpers
+
+Source code available on github: https://github.com/kevinyliang/5PS_Coding_Assessment
 
 Code copied here for ease of reference
 
@@ -345,7 +356,7 @@ def detect_palindrome(a1,a2,af,threshold):
 #| echo: true
 threhsold = 0.1
 sumstat_res['keep'] = sumstat_res[['reference_allele','other_allele','eaf']].apply(
-  lambda df: detect_palindrome(a1 = df['reference_allele'],a2 = df['other_allele'],af = df['eaf'],threshold = threhsold),
+  lambda df: python_GWAS_helpers.detect_palindrome(a1 = df['reference_allele'],a2 = df['other_allele'],af = df['eaf'],threshold = threhsold),
   axis=1
 )
 palin_dropped_snps = sumstat_res.query("~keep").shape[0]
@@ -354,4 +365,5 @@ invalid_eaf = sumstat_res.query("eaf < 0 | eaf > 1").shape[0]
 
 ```
 
-Number of palindromic ambiguous SNPs: ```{python} palin_dropped_snps```
+
+Number of palindromic ambiguous SNPs with threshold of 0.1 (i.e., palindromic and within 0.5 +- 0.1): ```{python} palin_dropped_snps```

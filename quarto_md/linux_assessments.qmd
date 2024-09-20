@@ -8,11 +8,12 @@ editor:
 engine: knitr
 ---
 
-### 5 Prime Sciences: Linux assessments
-This is the markdown for the linux assessments.
+### 5 Prime Sciences: Linux assessment
+This is the markdown for the linux assessment.
 
 Notes:
-  To run this markdown, need the rmarkdown package installed to execute the bash code blocks.
+  
+  The rmarkdown package is needed to render this markdown and execute the bash codes.
 
 **Assessment descriptions:**
 
@@ -44,14 +45,14 @@ Determine the character used for the column separator.
 
 **Solution 1:**
 
-In this simple bash script, I:
+In this simple bash script:
 
-1. Obtained the first line as from looking at the file content (gunzip -c <> | head ), I know it is the header.
-2. I pass this line through conditional to check which separator it matches to
+1. Obtained the first line which by looking at the file content (gunzip -c <> | head ), I know it is the header.
+2. I pass this line through a few conditionals to check which separator it matches to
 
 Limitations: This is assumes a few things
 
-* It assumes that for tab deliminated files, spaces are not used in the column name (and vice versa)
+* It assumes that if any of these characters are used, they are used as separators only
 * It assumes that all columns have the same type of separators (which is usually the case unless the file not formatted well)
 * It only tests 2 types of separators, but it can be extended to have more ifelse statements.
 
@@ -65,10 +66,13 @@ gwas_gziped_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5
 header_line=$(gunzip -c $gwas_gziped_file | head -n 1)
 tab_string="\t"
 space_string=" "
+comma_string=","
 if [[ $header_line =~ $space_string ]]; then 
   echo 'The separator is space'
 elif [[ $header_line =~ $tab_string ]]; then 
   echo 'The separator is tabs'
+elif [[ $header_line =~ $comma_string  ]]; then
+  echo "The separator is comma"
 else
   echo "Not sure"
 fi
@@ -76,12 +80,13 @@ fi
 
 **Solution 2:**
 
-Alternatively, it is often easier to obtain the first few rows, write it to file and look at it in vscode or vim and it will show the delimiter. We can to the head and tail to check, but it should all be the some
+Alternatively, it is possible to just obtain the first few rows, write it to a file or to standard output, and look at it in vscode or vim and it will show the delimiter. We can check the head and tail, but it should all be the same
 
 Limitation:
+
 * It does assume that the entire file have the same separator, which is usually the case
 
-It is always possible to parse through all the lines to make sure the number of columns are consistent, but usually in R if reading file with different columns counts, it will create an error (not always though)
+It is always possible to parse through all the lines to make sure the number of columns are consistent.
 
 ```{bash}
 #| echo: true
@@ -94,7 +99,7 @@ Obtain the line count
 
 **Solution**:
 
-unzip the file, then count the number of lines
+Unzip the file, then count the number of lines
 
 ```{bash}
 #| echo: true
@@ -140,10 +145,9 @@ Extract summary statistics within:
 
 **Solution**
 
-Use AWK to parse the file line by line and pipe it to a pre-specified output
-Steps:
+Use AWK to parse the file line by line and pipe it to a pre-specified output file
 
-Requirements
+Requirements:
 
 * within chromosome 7
 * positions between 121500718 and 120500718
@@ -154,9 +158,12 @@ Requirements
 Steps:
 
 0. unzip the gwas file and pipe it into awk
-1. (NR == FNR): technically not needed since just 1 file, though used for parsing more than 1 files, it help keeps track of where we are.
+1. (NR == FNR): technically not needed since I am parsing just 1 file, though when parsing more than 1 files, this keeps track of where we are.
 2. If (the critieria listed are satisfied) -> print the relevant columns
 4. redirect the output to a file
+
+
+The first few rows are shown
 
 ```{bash}
 #| echo: true
@@ -176,6 +183,8 @@ targ_chrom=7
 
 awk '(NR==FNR){if ($'$chrom_idx' == '$targ_chrom' && $'$rsid_idx' ~ "^rs" && $'$pos_idx' <= '$pos_max' && $'$pos_idx' >= '$pos_min'){print $'$chrom_idx',$'$pos_idx',$'$rsid_idx'}}' <(gunzip -c ${gwas_gziped_file}) > $output_file
 
+
+head $output_file
 ```
 
 #### Question 5
@@ -191,7 +200,7 @@ the original GWAS summary statistics file by **matching on chromosome and positi
 
 **Solution**
 
-Similar to Question 4, will use awk to parse line by line, but with the extra step of first storing the requirement chromosome position
+Similar to Question 4, will use awk to parse line by line, but with the extra step of first storing the requirements (i.e., chromosome and position)
 
 Steps:
 
@@ -203,7 +212,10 @@ Steps:
 
 Notes:
 
-* This matches positions and chromosome exactly, as stated in the question, though can be modified similar to what is done in Question 4 to match a range. In which case, the first awk statement should just keep track of the min and max positions rather than all positions.
+* This matches positions and chromosome exactly, as stated in the question, though can be modified similar to what was done in Question 4 to match a range. In which case, the first awk statement should just keep track of the min and max positions rather than all positions.
+
+
+The first few rows are shown
 
 ```{bash}
 #| echo: true
@@ -216,4 +228,6 @@ rsid_idx=3
 pos_idx=2
 
 awk '(NR==FNR){chrom[$1];pos[$2];rsid[$3];next}(NR != FNR){if ($'$chrom_idx' in chrom && $'$pos_idx' in pos){print $0}}' $q4_out_file <(gunzip -c $gwas_gziped_file) > $q6_out_file
+
+head $q6_out_file
 ```
