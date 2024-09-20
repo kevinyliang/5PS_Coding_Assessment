@@ -40,7 +40,6 @@ The following set of code simply reads in the data and prepare plot data
 
 ```{python}
 #| tags: [parameters]
-#| echo: true
 sumstat_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/cleaned_sumstats.txt.gz"
 ld_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/lead_chr7_proxy.tsv"
 lead_snp="rs3779381"

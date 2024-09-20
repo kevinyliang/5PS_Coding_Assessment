@@ -4,7 +4,7 @@ format:
   html:
     code-fold: true
 editor:
-  render-on-save: true
+  render-on-save: false
 jupyter: python3
 ---
 
@@ -16,6 +16,25 @@ Note that ultimately all created code should be formatted into a **Python packag
 
 Using the same GWAS summary statistics file as above, do the following:
 
+#### Setup
+These are codes for setup, import library, variables, etc
+```{python}
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os,shutil,sys,re,csv,warnings
+import pandas as pd
+import numpy as np
+
+# import own module
+import python_GWAS_helpers
+
+
+sumstat_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/cleaned_sumstats.txt.gz"
+
+original_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/fn2stu.MAF0_.005.pos_.out_.gz"
+
+
+```
 
 #### Question 1/2
 
@@ -24,6 +43,9 @@ Read the GWAS summary statistics into a Pandas DataFrame.
 Perform data cleaning by removing rows without a valid rsid number and save the
 cleaned data. This new dataset will be used in another step below.
 
+1. How many invalid rsids are there?
+2. The genome-wide significance p-value is 5e-8, how many SNPs in the file are genome-wide significant?
+
 **Solution**
 
 This was implemented in the python package: python_GWAS_helpers.
@@ -31,7 +53,7 @@ This was implemented in the python package: python_GWAS_helpers.
 Code copied here for ease of reference
 
 ```{python}
-#! echo: true
+#! echo: fenced
 def clean_sumstats(gwas_file,rsid_col,output_file):
   """Performs basic cleaning for summary statistics. Specifically it
  will
@@ -66,3 +88,270 @@ def clean_sumstats(gwas_file,rsid_col,output_file):
 
   return
 ```
+
+```{python}
+
+sumstat_res = pd.read_csv(sumstat_file,sep="\t",quoting=csv.QUOTE_NONE)
+
+original_sumstats = pd.read_csv(original_file,sep="\t",quoting=csv.QUOTE_NONE)
+
+valid_snps_idx = original_sumstats['rs_number'].apply(lambda val: bool(re.match("rs",val)))
+
+n_invalid = np.sum([not x for x in valid_snps_idx])
+valid_snps = np.sum(valid_snps_idx)
+
+# sig variants
+n_sig_var = np.sum(sumstat_res['p-value'] <= 5e-8)
+
+```
+
+**Solution**
+
+1. Number of invalid SNPs: ```{python} n_invalid```
+
+2. Number of genome-wide significant SNPs: ```{python} n_sig_var```
+
+#### Question 3
+
+Identify the most significant SNP in the 500 Kb region centred on chromosome 7 at position 121012647.
+
+```{python}
+
+# obtain the 500kb region around the variant we need
+## get the most significant snp as before
+targ_chrom = 7
+targ_pos = 121012647
+min_pos = targ_pos - 500_000
+max_pos = targ_pos + 500_000
+relevant_region = sumstat_res.query(
+  f"chromosome == {targ_chrom} & position <= {max_pos} & position >= {min_pos}"
+)
+most_significant = relevant_region[relevant_region['p-value'] == relevant_region['p-value'].min()]
+assert(len(most_significant) == 1),f"more than 1 sig snps...probably pick one first"
+
+most_sig_p = most_significant['p-value'].to_list()[0]
+```
+
+**Solution**
+
+The most significant p-value is ```{python} most_sig_p```
+```{python}
+#| label: top_5_snps
+#| tbl-cap: 'Top 5 SNPs summary statistics'
+#| tbl-column: body
+most_significant
+```
+
+#### Question 4
+
+Using the significant SNP identified in the previous step (i.e. Lead SNP), use
+LDProxy to obtain LD statistics (r2) for that SNP to all other SNPs in the surrounding 500 Kb region using the European population (https://ldlink.nci.nih.gov/?tab=ldproxy).
+
+**Solution**
+
+LD proxy query URL:
+  - https://ldlink.nih.gov/?var=rs3779381&pop=CEU%2BTSI%2BFIN%2BGBR%2BIBS&genome_build=grch37&r2_d=r2&window=500000&collapseTranscript=true&annotate=forge&tab=ldproxy
+
+query parameters:
+
+* window:500kb
+* build: grch37 (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4755714/)
+* Ancestry: Europeans
+* query SNP: rs3779381
+
+Results:
+* R2 computed for 998 variants.
+
+#### Question 5
+
+Using your favourite Python package for plotting, 
+
+1. create a regional association plot
+  * plotting the **-log10 p-value** against the genomic position of the **500 Kb** region around the Lead SNP. 
+  * Use the LD statistics from the previous question to bin and colour-code the surrounding SNPs. 
+  * The created plots should look like this, without
+
+```{python}
+most_sig_snp = most_significant.rs_number.to_list()[0]
+most_sig_chr = most_significant.chromosome.to_list()[0]
+most_sig_pos = most_significant.position.to_list()[0]
+min_pos = most_sig_pos - 500_000
+max_pos = most_sig_pos + 500_000
+assert(most_sig_chr == 7),f"what?? it should be chr 7 cuz we queried chr 7"
+plot_region = sumstat_res.query(
+  f"chromosome == {most_sig_chr} & position >= {min_pos} & position <= {max_pos}"
+)
+
+# get the plot data
+ld_data = pd.read_csv("/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/lead_chr7_proxy.tsv",sep="\t",quoting=csv.QUOTE_NONE)[['RS_Number',"R2"]]
+plot_data = pd.merge(
+  plot_region[['position','rs_number','p-value','_-log10_p-value']],
+  ld_data,
+  how='left',left_on=['rs_number'],right_on=['RS_Number']
+).copy()
+# modify stuff so the plot looks nice
+
+## the units in mb
+x_axis_units = 1_000_000
+plot_data = plot_data.assign(
+  pos_mb = lambda df: df['position']/x_axis_units
+)
+## rename so easier to reference.
+plot_data = plot_data.rename(
+  {
+    "_-log10_p-value":"neglog10_pvalue"
+  },axis=1
+)
+## fill in R2 without value to be 0 (so will be the same color)
+plot_data['R2'] = plot_data['R2'].apply(
+  lambda val: 0 if np.isnan(val) else val
+)
+def get_bins(val):
+  if val < 0.2:
+    bin_cat = "<0.2"
+  elif 0.2 <= val < 0.4:
+    bin_cat = "[0.2,0.4)"
+  elif 0.4 <= val < 0.6:
+    bin_cat = "[0.4,0.6)"
+  elif 0.6 <= val < 0.8:
+    bin_cat = "[0.6,0.8)"
+  elif 0.8 <= val:
+    bin_cat = "[0.8,1]"
+  else:
+    assert(False),f"what value are we doing...{val}"
+  return bin_cat
+plot_data['r2_bins'] = plot_data[['R2','rs_number']].apply(
+  lambda df: "Query SNP" if df['rs_number'] == most_sig_snp else get_bins(df['R2']),
+  axis=1
+)
+# create custom palette
+c_palette = {
+  "Query SNP":"#c71d71",
+  "<0.2":"#120e46",
+  "[0.2,0.4)":"#6ea2ce",
+  "[0.4,0.6)":"#15a67d",
+  "[0.6,0.8)":"#fdb24f",
+  "[0.8,1)":"#ef471f"
+}
+```
+```{python}
+#| label: locuszoom
+#| fig-cap: Locuszoom around lead SNPs
+fig,ax = plt.subplots()
+sns.scatterplot(
+  plot_data,
+  x = "pos_mb", y="neglog10_pvalue",hue="r2_bins",ax=ax,
+  hue_order = list(c_palette.keys()),palette=c_palette
+)
+# annotate the lead snp
+ax.annotate(
+  "Query SNP/Lead SNP", 
+  xy=(0.5,0.95),
+  xytext=(0.6,0.95),
+  xycoords='axes fraction',
+  arrowprops=dict(arrowstyle="->",facecolor='black')
+)
+ax.update(
+  {
+    "xlabel":"Position [MB]",
+    "ylabel":r"$-log_{10}(p-value)$"
+  }
+)
+plt.show()
+```
+
+#### Question 6
+
+SNPs with A/T or G/C alleles are known as palindromic SNPs, because their alleles are represented by the same pair of letters on the forward and reverse strands. Write a function that detects SNPs palindromic with palindromic alleles (A/T, T/A, G/C, or C/G) and removes them if their allele frequency is within a specific threshold around the allele frequency of 0.5.
+
+1. Test your created function: How many SNPs are palindromic and are within the threshold of 0.1 around the allele frequency of 0.5?
+
+**Solution**
+
+The function is implemented in the package: python_GWAS_helpers.
+
+Code copied here for ease of reference
+
+**notes**
+There were variants with allele frequneices as -9. These variants were not filtered out and assuemd to be ok.
+
+```{python}
+#! echo: fenced
+def detect_palindrome(a1,a2,af,threshold):
+  """Determines if 2 variants are palindromic and determine whether keep or remove based on minor allele frequency threhsold.
+
+  keep:
+    non palindromic (SNPs or Indels)
+    palindromic but allele frequency is not within 0.5 +- threshold
+  remove:
+    palindromic and within the boundary
+
+
+  Args:
+      a1 (str): first allele
+      a2 (str): second allele
+      af (float): allele frequency of the SNP (minor or major is fine)
+      threshold (float): the region around 0.5 for determining keep or drop. (i.e., 0.5 +- threshold is the boundary)
+  """
+
+  # standardize the notations
+  ## cast to the right type. Error if not possible
+  a1 = str(a1)
+  a2 = str(a2)
+  af = float(af)
+  threshold = float(threshold)
+  a1 = a1.upper()
+  a2 = a2.upper()
+
+  # input checks
+  assert(len(a1) > 0 and len(a2) > 0),f"invalid inputs: {a1} {a2}"
+  assert(threshold < 0.5),f"Cannot specify a threshold of 0.5 or more (0.5 +- threshold will be 0 or less)"
+  if af < 0 or af > 1:
+    warnings.warn(f"{af} af not bounded between 0 and 1, kept, but probably should check..")
+    return True
+
+
+  # determines if a1 and a2 are palindromic or not
+  is_palindrom = None
+  if len(a1) > 1 or len(a2) > 1:
+    is_palindrom = False
+  elif a1 == "A" and a2 == "T":
+    is_palindrom = True
+  elif a1 == "T" and a2 == "A":
+    is_palindrom = True
+  elif a1 == "C" and a2 == "G":
+    is_palindrom = True
+  elif a1 == "G" and a2 == "C":
+    is_palindrom = True
+  else:
+    is_palindrom = False
+  
+  assert(is_palindrom != None)
+  # determines boundary
+  af_lower_bound = 0.5 - threshold
+  af_upper_bound = 0.5 + threshold
+  # default is keep. Only change if palindromic and ambiguous frequency
+  keep = True
+  if is_palindrom:
+    if af >= af_lower_bound and af <= af_upper_bound:
+      keep = False
+    else:
+      keep = True
+
+  return keep
+```
+
+```{python}
+#| echo: true
+threhsold = 0.1
+sumstat_res['keep'] = sumstat_res[['reference_allele','other_allele','eaf']].apply(
+  lambda df: detect_palindrome(a1 = df['reference_allele'],a2 = df['other_allele'],af = df['eaf'],threshold = threhsold),
+  axis=1
+)
+palin_dropped_snps = sumstat_res.query("~keep").shape[0]
+
+invalid_eaf = sumstat_res.query("eaf < 0 | eaf > 1").shape[0]
+
+```
+
+Number of palindromic ambiguous SNPs: ```{python} palin_dropped_snps```
