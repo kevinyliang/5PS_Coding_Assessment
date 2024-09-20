@@ -1,0 +1,60 @@
+---
+title: GWAS assessments
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+
+
+
+### Question 1:
+
+For a typical genome-wide association study:
+
+a. Why is the lower genome-wide significant p-value threshold of 5e-8 used as
+opposed to 0.05?
+
+b. Given that the input GWAS has ~10 million SNPS, why is the specific value of
+5e-8 used?
+
+```{python}
+#| vscode: {languageId: plaintext}
+Solutions:
+
+a: 
+  This is to account for multipel testing correction. A p-value of 0.05 would correspond to the probability of observing a test-statistic as extreme or more for a single tests. However, when running many tests, this would correspond to some false positive observed.
+
+  To use a bonferroni correction of 5e-8 would ensure the family-wise false positive rate of roughly 0.05
+
+b:
+  A 5e-8 bonferroni threshold assuming 1 million independent variants are used instead of the 10 million tests because Bonferroni is correcting for independent tests.
+
+  if a particular SNP has a significant (i.e., low p-value), then any variants in strong LD (say >0.8 R2) will also have a low p-value, but these are not independent tests.
+
+  a threshold of 5e-8 assumes 1 million independent variants, for 1 million tests and is commonly used in the field
+```
+
+### Question 2:
+
+Plot the minor allele frequency (MAF) versus the absolute value of the “beta” for all genome-wide significant variants (p-value < 5e-8) from the cleaned GWAS file. You should observe that the minor allele frequency is generally inversely proportional to
+the absolute beta (|𝑏𝑒𝑡𝑎| ≈ 1 ). 𝑀𝐴𝐹
+
+a. What aspect of evolution is responsible for observing so few variants of large beta (effect) at high minor allele frequency, i.e. so few points in the top-right of the plot.
+
+b. What aspect of GWAS statistical power is responsible for so few variants of small beta (effect) at low minor allele frequency, i.e. so few points in the bottom-left of the plot, beneath the trend.
+
+```{python}
+#| vscode: {languageId: plaintext}
+Solutions:
+
+a: 
+  This relates to negative selection. SNPs with strong effects on the phenotype are likely under stronger negative selective pressure, especially if the phenotype is a disease or a trait that is not favorable for mating/reproduction.
+  
+  Hence, variants with strong effects tend to be rare.
+
+b:
+  Insufficient sample sizes is the reason why so few variants of small effect size and relatively rare to be detected.
+```
+

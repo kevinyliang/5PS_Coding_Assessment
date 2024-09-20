@@ -1,0 +1,36 @@
+---
+title: GWAS assessments
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+### Question 8
+
+Create a Quarto report containing the 
+
+* regional association plot
+* the total number of SNPs within that plotted region
+* Lead SNP
+  * rsid
+  * p-value
+  * beta
+  * standard error
+
+* Finally include a table of the top 5 SNPs (**ranked by p-value**) and **include all columns**.
+
+I believe an markdown woudl also be acceptable and because I do not have Quarto installed, I decided to use jupyternotebook.
+
+```{python}
+# read in data
+import os,shutil,re,glob,csv
+import os,shutil,re,glob,csv
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# import custom package
+from python_GWAS_helpers import *
+```
