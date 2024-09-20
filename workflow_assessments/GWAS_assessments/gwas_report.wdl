@@ -1,7 +1,7 @@
 
 version 1.0
 
-workflow make_regional_plot {
+workflow make_gwas_report {
   input {
     File cleaned_sumstat_file
     String rsid
@@ -9,7 +9,7 @@ workflow make_regional_plot {
     File report_quarto
   }
 
-  call make_gwas_report{
+  call run_quarto{
     input:
       cleaned_sumstat_file = cleaned_sumstat_file,
       rsid = rsid,
@@ -19,7 +19,7 @@ workflow make_regional_plot {
 }
 
 
-task make_gwas_report{
+task run_quarto{
   input{
     File cleaned_sumstat_file
     String rsid

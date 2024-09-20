@@ -9,7 +9,7 @@ jupyter: python3
 
 
 
-### Question 1:
+#### Question 1:
 
 For a typical genome-wide association study:
 
@@ -19,24 +19,20 @@ opposed to 0.05?
 b. Given that the input GWAS has ~10 million SNPS, why is the specific value of
 5e-8 used?
 
-```{python}
-#| vscode: {languageId: plaintext}
-Solutions:
+**Solutions**
 
 a: 
-  This is to account for multipel testing correction. A p-value of 0.05 would correspond to the probability of observing a test-statistic as extreme or more for a single tests. However, when running many tests, this would correspond to some false positive observed.
+  This is to account for multiple testing. A p-value of 0.05 means the probability of observing a test-statistic as extreme or more for a single tests under the null is 5%. However, when running many tests, this would correspond to many false positives observed.
 
-  To use a bonferroni correction of 5e-8 would ensure the family-wise false positive rate of roughly 0.05
+  To use a bonferroni correction of 5e-8 would ensure the family-wise error rate of roughly 0.05
 
 b:
-  A 5e-8 bonferroni threshold assuming 1 million independent variants are used instead of the 10 million tests because Bonferroni is correcting for independent tests.
+  A 5e-8 bonferroni threshold assumes 1 million independent variants. This is because many variants are in LD and correcting for all variants will be overly conservative.
 
-  if a particular SNP has a significant (i.e., low p-value), then any variants in strong LD (say >0.8 R2) will also have a low p-value, but these are not independent tests.
+  If a SNP has a significant p-value (i.e., low p-value), then any variants in strong LD with this SNP will also have a low p-value, but these are not independent tests.
 
-  a threshold of 5e-8 assumes 1 million independent variants, for 1 million tests and is commonly used in the field
-```
 
-### Question 2:
+#### Question 2:
 
 Plot the minor allele frequency (MAF) versus the absolute value of the “beta” for all genome-wide significant variants (p-value < 5e-8) from the cleaned GWAS file. You should observe that the minor allele frequency is generally inversely proportional to
 the absolute beta (|𝑏𝑒𝑡𝑎| ≈ 1 ). 𝑀𝐴𝐹
@@ -45,16 +41,39 @@ a. What aspect of evolution is responsible for observing so few variants of larg
 
 b. What aspect of GWAS statistical power is responsible for so few variants of small beta (effect) at low minor allele frequency, i.e. so few points in the bottom-left of the plot, beneath the trend.
 
+**Solution**
+
 ```{python}
-#| vscode: {languageId: plaintext}
-Solutions:
+import os,shutil,sys,csv
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-a: 
-  This relates to negative selection. SNPs with strong effects on the phenotype are likely under stronger negative selective pressure, especially if the phenotype is a disease or a trait that is not favorable for mating/reproduction.
-  
-  Hence, variants with strong effects tend to be rare.
+sumstat_res = pd.read_csv("/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/cleaned_sumstats.txt.gz",sep="\t",quoting=csv.QUOTE_NONE)
 
-b:
-  Insufficient sample sizes is the reason why so few variants of small effect size and relatively rare to be detected.
+# obtain plot data
+plot_data = sumstat_res.query("`p-value` <= 5e-8").copy()
+plot_data['abs_beta'] = np.abs(plot_data['beta'])
+plot_data['maf'] = plot_data['eaf'].apply(
+  lambda val: val if val <= 0.5 else 1-val
+)
+
+fig,ax = plt.subplots()
+sns.scatterplot(
+  plot_data,
+  y='abs_beta',x='maf',ax=ax
+)
+ax.update({
+  'ylabel':"|beta|",
+  "xlabel":"minor allele frequency"
+})
+plt.show()
 ```
 
+a: 
+  This relates to negative selection. SNPs with strong effects on the phenotype are likely under stronger negative selective pressure, especially if the phenotype is a disease or a trait that is not favorable for mating/reproduction. Consequently, these variants will be rare.
+  
+
+b:
+  Insufficient sample sizes is the reason why so few variants of small effect sizes that are relatively rare are detected.
