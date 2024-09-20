@@ -1,5 +1,5 @@
 ---
-title: GWAS assessments
+title: GWAS report
 format:
   html:
     code-fold: true
@@ -10,7 +10,7 @@ jupyter: python3
 
 ### Question 8
 
-Create a Quarto report containing the 
+This is the Quarto report for question 8
 
 * regional association plot
 * the total number of SNPs within that plotted region
@@ -24,7 +24,6 @@ Create a Quarto report containing the
 
 ```{python}
 # read in data
-import os,shutil,re,glob,csv
 import os,shutil,re,glob,csv
 import pandas as pd
 import numpy as np
@@ -41,13 +40,15 @@ The following set of code simply reads in the data and prepare plot data
 ```{python}
 #| tags: [parameters]
 sumstat_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/cleaned_sumstats.txt.gz"
-ld_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/lead_chr7_proxy.tsv"
+ld_file="/Users/kevinliang/Desktop/work/working/interview_prep/5prime/5PrimeSciences_coding_assessments/data/rs3779381_proxy_euro_500kb.txt"
 lead_snp="rs3779381"
 ```
 
 ```{python}
 sumstat_res = pd.read_csv(sumstat_file,sep="\t",quoting=csv.QUOTE_NONE)
 most_significant = sumstat_res.query(f"rs_number == '{lead_snp}'")
+assert(len(most_significant) != 0),f"{lead_snp} not in summary statistic file"
+assert(len(most_significant) == 1),f"{lead_snp}, more than 1 entry found"
 
 # obtain the plot data
 most_sig_snp = most_significant.rs_number.to_list()[0]
@@ -55,7 +56,7 @@ most_sig_chr = most_significant.chromosome.to_list()[0]
 most_sig_pos = most_significant.position.to_list()[0]
 min_pos = most_sig_pos - 500_000
 max_pos = most_sig_pos + 500_000
-assert(most_sig_chr == 7),f"what?? it should be chr 7 cuz we queried chr 7"
+
 plot_region = sumstat_res.query(
   f"chromosome == {most_sig_chr} & position >= {min_pos} & position <= {max_pos}"
 )
@@ -116,11 +117,11 @@ This is the regional association plot for the user input RSID `{python} lead_snp
 # create region plot
 c_palette = {
   "Query SNP":"#c71d71",
-  "<0.2":"#120e46",
-  "[0.2,0.4)":"#6ea2ce",
-  "[0.4,0.6)":"#15a67d",
+  "[0.8,1)":"#ef471f",
   "[0.6,0.8)":"#fdb24f",
-  "[0.8,1)":"#ef471f"
+  "[0.4,0.6)":"#15a67d",
+  "[0.2,0.4)":"#6ea2ce",
+  "<0.2":"#120e46"
 }
 
 fig,ax = plt.subplots()
@@ -139,10 +140,11 @@ ax.annotate(
 )
 ax.update(
   {
-    "xlabel":"Position [MB]",
+    "xlabel":f"position on chr{most_sig_chr} (Mb)",
     "ylabel":r"$-log_{10}(p-value)$"
   }
 )
+ax.legend(title=r"$r^2$")
 plt.show()
 ```
 
@@ -170,6 +172,8 @@ The beta for the SNP is `{python} lead_beta`
 The standard error for the SNP is `{python} lead_se`
 
 #### Top 5 SNPs
+
+These are the top 5 variants based on p-value in the plotted region.
 
 ```{python}
 #| label: top_5_snps
