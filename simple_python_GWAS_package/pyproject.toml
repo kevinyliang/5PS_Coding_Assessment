@@ -17,13 +17,6 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "re",
-  "csv",
-  "shutil",
-  "sys",
-  "gzip",
-  "warnings",
-  "unittest",
   "pandas",
   "numpy",
   "pyyaml"
