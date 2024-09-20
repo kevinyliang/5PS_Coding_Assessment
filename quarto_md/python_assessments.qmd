@@ -367,3 +367,42 @@ invalid_eaf = sumstat_res.query("eaf < 0 | eaf > 1").shape[0]
 
 
 Number of palindromic ambiguous SNPs with threshold of 0.1 (i.e., palindromic and within 0.5 +- 0.1): ```{python} palin_dropped_snps```
+
+
+#### Question 7:
+
+The package source code is on github:
+
+https://github.com/kevinyliang/5PS_Coding_Assessment/tree/main/simple_python_GWAS_package
+
+To install via pip do:
+
+1. clone the github repository or download the code
+2. run
+
+```{bash}
+pip install <absolute path to>/simple_python_GWAS_package
+```
+
+##### Question 8:
+
+Please see the Quarto markdown (GWAS_report.qmd)
+
+##### Question 9:
+
+Please refer to:
+
+https://github.com/kevinyliang/5PS_Coding_Assessment/blob/main/simple_python_GWAS_package/tests/test_sumstat_cleanup.py
+
+The following situations are tested:
+
+* test_palindrome_unambig:
+  * palindromic variants outside the boundary should all be kept
+* test_palindrome_ambig
+  * palindromic variants within the boundary should not be kept
+* test_indel_ok
+  * Indels should be kept
+* test_non_palindrome:
+  * Non palindromic variants regardless of boundaries or threshold should be kept
+* test_warnings
+  * user warning should be triggered if allele frequency is not within 0 and 1 inclusive

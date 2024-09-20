@@ -20,6 +20,8 @@ class test_detect_palindrome(unittest.TestCase):
           python_GWAS_helpers.detect_palindrome(alleles[0],alleles[1],i,0.1)
         )
   def test_palindrome_ambig(self):
+    """Palindromic variants within the specified boundary should not be kept
+    """
     eaf_range = list(np.arange(0.4,0.5,0.01))
     allele_pairs = [("A","T"),("T","A"),("C","G"),("G","C")]
     for i in eaf_range:
