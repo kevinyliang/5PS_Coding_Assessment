@@ -23,9 +23,7 @@ dependencies = [
   "sys",
   "gzip",
   "warnings",
-  "pandas",
-  "numpy",
-  unittest
+  "unittest",
   "pandas",
   "numpy",
   "pyyaml"
